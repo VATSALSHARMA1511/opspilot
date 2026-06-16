@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+alembic
+psycopg2-binary
+pgvector
+pydantic-settings
+email-validator
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==3.2.0
+redis
+faker
+openai
+groq
