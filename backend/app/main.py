@@ -16,7 +16,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://localhost:3000",
-        "https://opspilot-frontend.onrender.com",
+        "https://opspilot-frontend.onrender.com","https://opspilot-sand.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
