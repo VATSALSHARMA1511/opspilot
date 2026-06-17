@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-
+from app.api.v1.users import router as users_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.tickets import router as tickets_router
 from app.api.v1.ai import router as ai_router
@@ -77,7 +77,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(tickets_router, prefix="/api/v1")
 app.include_router(ai_router, prefix="/api/v1")
-
+app.include_router(users_router, prefix="/api/v1")
 
 @app.get("/health")
 def health_check():
