@@ -39,6 +39,9 @@ class TicketResponse(BaseModel):
         default=None, validation_alias=AliasPath("assignee")
     )
     resolution_notes: str | None
+    ai_category: str | None = None
+    ai_priority: str | None = None
+    ai_summary: str | None = None
     created_at: datetime
     updated_at: datetime
     resolved_at: datetime | None
