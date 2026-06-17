@@ -25,12 +25,12 @@ export default function LoginPage() {
           email: form.email,
           password: form.password
         })
-        login(res.data.access_token, res.data.refresh_token)
+        login(res.data.access_token, res.data.refresh_token, res.data.user)
       } else {
         const res = await client.post('/api/v1/auth/login', {
           email: form.email, password: form.password
         })
-        login(res.data.access_token, res.data.refresh_token)
+        login(res.data.access_token, res.data.refresh_token, res.data.user)
       }
       navigate('/')
     } catch (err) {

@@ -4,7 +4,7 @@ import { LayoutDashboard, Ticket, LogOut } from 'lucide-react'
 import client from '../api/client'
 
 export default function Layout({ children }) {
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -38,6 +38,12 @@ export default function Layout({ children }) {
             </Link>
           ))}
         </nav>
+        {user && (
+          <div className="px-2 py-3 mb-2 border-t border-zinc-800">
+            <p className="text-sm text-white truncate">{user.full_name}</p>
+            <p className="text-xs text-zinc-500 capitalize">{user.role}</p>
+          </div>
+        )}
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-2 py-2 rounded-md text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
