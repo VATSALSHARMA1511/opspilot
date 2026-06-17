@@ -14,7 +14,42 @@ def _groq_client() -> Groq:
         raise HTTPException(status_code=503, detail="GROQ_API_KEY not configured")
     return Groq(api_key=settings.GROQ_API_KEY)
 
+def classify_ticket(title: str, description: str) -> dict:
+    """
+    Calls Groq to classify a ticket and return category, priority, and summary.
+    Returns a dict with keys: ai_category, ai_priority, ai_summary.
+    Fails silently — never blocks ticket creation.
+    """
+    client = _groq_client()
+    prompt = f"""You are an IT support classifier. Analyze this ticket and respond with ONLY a JSON object, no explanation.
 
+Title: {title}
+Description: {description}
+
+Respond with exactly this JSON structure:
+{{
+  "category": "Hardware|Software|Network|Access|Email|Other",
+  "priority": "low|medium|high|critical",
+  "summary": "One sentence summary of the issue"
+}}"""
+
+    try:
+        response = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1,
+            max_tokens=150,
+        )
+        import json
+        content = response.choices[0].message.content.strip()
+        result = json.loads(content)
+        return {
+            "ai_category": result.get("category"),
+            "ai_priority": result.get("priority"),
+            "ai_summary": result.get("summary"),
+        }
+    except Exception:
+        return {"ai_category": None, "ai_priority": None, "ai_summary": None}
 def generate_embedding(text: str) -> List[float]:
     """
     Groq doesn't have an embeddings API yet.

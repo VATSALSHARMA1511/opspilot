@@ -1,3 +1,4 @@
+from app.services.ai_service import classify_ticket
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -58,6 +59,16 @@ def create_ticket(db: Session, data: TicketCreate, current_user: User) -> Ticket
     )
     db.add(ticket)
     db.flush()
+
+    # AI classification — runs after flush so ticket has an ID, fails silently
+    try:
+        ai_result = classify_ticket(data.title, data.description)
+        ticket.ai_category = ai_result.get("ai_category")
+        ticket.ai_priority = ai_result.get("ai_priority")
+        ticket.ai_summary = ai_result.get("ai_summary")
+    except Exception:
+        pass
+
     _write_audit(
         db, current_user.id, "CREATE", "ticket", ticket.id,
         new_value={"title": ticket.title, "status": ticket.status.value},

@@ -56,9 +56,13 @@ class Ticket(Base):
         nullable=True,
     )
     resolution_notes: Mapped[str | None] = mapped_column(Text)
+    ai_category: Mapped[str | None] = mapped_column(String(100))
+    ai_priority: Mapped[str | None] = mapped_column(String(50))
+    ai_summary: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+    
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
