@@ -36,6 +36,8 @@ export default function TicketDetailPage() {
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [statusLoading, setStatusLoading] = useState(false)
+  const [users, setUsers] = useState([])
+  const [assigning, setAssigning] = useState(false)
 
   const fetchTicket = async () => {
     try {
@@ -52,9 +54,15 @@ export default function TicketDetailPage() {
       setComments(res.data.items || res.data || [])
     } catch { }
   }
+  const fetchUsers = async () => {
+    try {
+      const res = await client.get('/api/v1/users')
+      setUsers(res.data || [])
+    } catch { }
+  }
 
   useEffect(() => {
-    Promise.all([fetchTicket(), fetchComments()]).finally(() => setLoading(false))
+    Promise.all([fetchTicket(), fetchComments(), fetchUsers()]).finally(() => setLoading(false))
   }, [id])
 
   const changeStatus = async (newStatus) => {
@@ -66,6 +74,18 @@ export default function TicketDetailPage() {
       console.error(err.response?.data)
     } finally {
       setStatusLoading(false)
+    }
+  }
+  const handleAssign = async (assigneeId) => {
+    if (!assigneeId) return
+    setAssigning(true)
+    try {
+      await client.patch(`/api/v1/tickets/${id}/assign`, { assignee_id: Number(assigneeId) })
+      await fetchTicket()
+    } catch (err) {
+      console.error(err.response?.data)
+    } finally {
+      setAssigning(false)
     }
   }
 
@@ -135,7 +155,23 @@ export default function TicketDetailPage() {
           <p className="text-xs text-zinc-500 mb-2">Description</p>
           <p className="text-sm text-zinc-300 leading-relaxed">{ticket.description}</p>
         </div>
-
+        {/* Assign */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-4">
+        <p className="text-xs text-zinc-500 mb-3">Assign Ticket</p>
+        <select
+        value={ticket.assigned_to?.id || ''}
+        onChange={e => handleAssign(e.target.value)}
+        disabled={assigning}
+        className="bg-zinc-950 border border-zinc-800 text-white text-sm rounded-md px-3 py-2 focus:outline-none focus:border-zinc-600 disabled:opacity-50"
+        >
+          <option value="" disabled>Select an assignee</option>
+          {users.map(u => (
+            <option key={u.id} value={u.id}>
+              {u.full_name} ({u.role})
+              </option>
+            ))}
+            </select>
+            </div>
         {/* AI Classification */}
         {ticket.ai_category && (
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-4">
