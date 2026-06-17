@@ -231,7 +231,7 @@ export default function TicketDetailPage() {
                       })}
                     </span>
                   </div>
-                  <p className="text-sm text-zinc-300">{c.content}</p>
+                  <p className="text-sm text-zinc-300">{c.body}</p>
                 </div>
               ))}
             </div>
