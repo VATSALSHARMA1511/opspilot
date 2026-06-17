@@ -48,7 +48,8 @@ Respond with exactly this JSON structure:
             "ai_priority": result.get("priority"),
             "ai_summary": result.get("summary"),
         }
-    except Exception:
+    except Exception as e:
+        print(f"AI classification failed: {e}")
         return {"ai_category": None, "ai_priority": None, "ai_summary": None}
 def generate_embedding(text: str) -> List[float]:
     """
