@@ -35,7 +35,7 @@ Respond with exactly this JSON structure:
 
     try:
         response = client.chat.completions.create(
-            model="llama3-70b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1,
             max_tokens=150,
@@ -103,7 +103,7 @@ def generate_resolution_suggestion(ticket_id: int, db: Session) -> str:
     client = _groq_client()
     try:
         response = client.chat.completions.create(
-            model="llama3-70b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2,
             max_tokens=300,
