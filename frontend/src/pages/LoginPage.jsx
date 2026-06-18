@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [departments, setDepartments] = useState([])
   const [form, setForm] = useState({
-    email: '', password: '', full_name: '', department_id: ''
+    email: '', password: '', full_name: '', department_id: '', role: 'member'
   })
 
   useEffect(() => {
@@ -34,6 +34,7 @@ export default function LoginPage() {
           email: form.email,
           password: form.password,
           department_id: Number(form.department_id),
+          role: form.role,
         })
         login(res.data.access_token, res.data.refresh_token, res.data.user)
       } else {
@@ -94,6 +95,17 @@ export default function LoginPage() {
               {departments.map(d => (
                 <option key={d.id} value={d.id}>{d.name}</option>
               ))}
+            </select>
+          )}
+          {isRegister && (
+            <select
+              name="role"
+              value={form.role}
+              onChange={handle}
+              className="w-full bg-zinc-900 border border-zinc-800 text-white text-sm rounded-md px-3 py-2.5 focus:outline-none focus:border-zinc-600"
+            >
+              <option value="member">Member</option>
+              <option value="manager">Manager</option>
             </select>
           )}
         </div>
