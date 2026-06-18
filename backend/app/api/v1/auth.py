@@ -111,11 +111,11 @@ def login(
         "refresh_token": refresh_token,
         "token_type": "bearer",
         "user": {
-            "id": db_user.id,
-            "full_name": db_user.full_name,
-            "email": db_user.email,
-            "role": db_user.role,
-            "department_id": db_user.department_id,
+            "id": user.id,
+            "full_name": user.full_name,
+            "email": user.email,
+            "role": user.role,
+            "department_id": user.department_id,
         },
     }
 
