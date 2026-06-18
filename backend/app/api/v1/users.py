@@ -35,6 +35,5 @@ def list_users(
 @router.get("/departments", response_model=list[DepartmentResponse])
 def list_departments(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     return db.query(Department).order_by(Department.name).all()
