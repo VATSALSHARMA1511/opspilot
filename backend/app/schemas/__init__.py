@@ -3,29 +3,26 @@ from app.schemas.pagination import PaginatedResponse
 from app.schemas.ticket import (
     TicketCommentCreate,
     TicketCommentResponse,
-    TicketCommentUpdate,
     TicketCreate,
-    TicketEmbeddingCreate,
-    TicketEmbeddingResponse,
-    TicketEmbeddingUpdate,
     TicketResponse,
+    TicketReviewBody,
+    TicketAssignBody,
     TicketUpdate,
 )
-from app.schemas.user import UserCreate, UserResponse, UserUpdate
+from app.schemas.user import DepartmentResponse, UserCreate, UserResponse, UserUpdate
 
 __all__ = [
     "AuditLogCreate",
     "AuditLogResponse",
     "AuditLogUpdate",
+    "DepartmentResponse",
     "PaginatedResponse",
+    "TicketAssignBody",
     "TicketCommentCreate",
     "TicketCommentResponse",
-    "TicketCommentUpdate",
     "TicketCreate",
-    "TicketEmbeddingCreate",
-    "TicketEmbeddingResponse",
-    "TicketEmbeddingUpdate",
     "TicketResponse",
+    "TicketReviewBody",
     "TicketUpdate",
     "UserCreate",
     "UserResponse",

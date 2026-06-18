@@ -1,16 +1,20 @@
 from datetime import datetime
-
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
-
 from app.models.enums import UserRole
+
+
+class DepartmentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
 
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
     full_name: str
-    role: UserRole = UserRole.VIEWER
-    department: str | None = None
+    role: UserRole = UserRole.MEMBER
+    department_id: int | None = None
     is_active: bool = True
 
     @field_validator("email")
@@ -24,7 +28,7 @@ class UserUpdate(BaseModel):
     password: str | None = Field(default=None, min_length=8)
     full_name: str | None = None
     role: UserRole | None = None
-    department: str | None = None
+    department_id: int | None = None
     is_active: bool | None = None
 
     @field_validator("email")
@@ -42,7 +46,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     full_name: str
     role: UserRole
-    department: str | None
+    department: DepartmentResponse | None = None
     is_active: bool
     created_at: datetime
     updated_at: datetime

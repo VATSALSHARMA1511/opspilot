@@ -15,9 +15,10 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
-from app.models.enums import TicketPriority, TicketStatus
+from app.models.enums import ManagerAction, TicketPriority, TicketStatus
 
 if TYPE_CHECKING:
+    from app.models.department import Department
     from app.models.user import User
 
 
@@ -27,6 +28,7 @@ class Ticket(Base):
         Index("ix_tickets_status", "status"),
         Index("ix_tickets_created_by_id", "created_by_id"),
         Index("ix_tickets_assigned_to_id", "assigned_to_id"),
+        Index("ix_tickets_target_department_id", "target_department_id"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -35,34 +37,55 @@ class Ticket(Base):
     status: Mapped[TicketStatus] = mapped_column(
         Enum(TicketStatus, name="ticket_status", values_callable=lambda x: [e.value for e in x]),
         nullable=False,
-        default=TicketStatus.OPEN,
+        default=TicketStatus.PENDING_REVIEW,
     )
     priority: Mapped[TicketPriority] = mapped_column(
-        Enum(
-            TicketPriority,
-            name="ticket_priority",
-            values_callable=lambda x: [e.value for e in x],
-        ),
+        Enum(TicketPriority, name="ticket_priority", values_callable=lambda x: [e.value for e in x]),
         nullable=False,
         default=TicketPriority.MEDIUM,
     )
     category: Mapped[str | None] = mapped_column(String(100))
+
+    # Who created it
     created_by_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="RESTRICT"),
         nullable=False,
     )
+
+    # Which department it's routed to
+    target_department_id: Mapped[int] = mapped_column(
+        ForeignKey("departments.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+
+    # Which manager reviewed it
+    manager_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    # Manager decision
+    manager_action: Mapped[ManagerAction] = mapped_column(
+        Enum(ManagerAction, name="manager_action", values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=ManagerAction.PENDING,
+    )
+    rejection_reason: Mapped[str | None] = mapped_column(Text)
+
+    # Assigned member
     assigned_to_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True,
     )
+
     resolution_notes: Mapped[str | None] = mapped_column(Text)
     ai_category: Mapped[str | None] = mapped_column(String(100))
     ai_priority: Mapped[str | None] = mapped_column(String(50))
     ai_summary: Mapped[str | None] = mapped_column(Text)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -75,6 +98,14 @@ class Ticket(Base):
     creator: Mapped["User"] = relationship(
         back_populates="created_tickets",
         foreign_keys=[created_by_id],
+    )
+    target_department: Mapped["Department"] = relationship(
+        back_populates="tickets",
+        foreign_keys=[target_department_id],
+    )
+    reviewing_manager: Mapped["User | None"] = relationship(
+        back_populates="managed_tickets",
+        foreign_keys=[manager_id],
     )
     assignee: Mapped["User | None"] = relationship(
         back_populates="assigned_tickets",

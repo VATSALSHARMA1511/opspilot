@@ -1,15 +1,16 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, Enum, String, func
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 from app.models.enums import UserRole
 
 if TYPE_CHECKING:
-    from app.models.audit_log import AuditLog
+    from app.models.department import Department
     from app.models.ticket import Ticket, TicketComment
+    from app.models.audit_log import AuditLog
 
 
 class User(Base):
@@ -23,7 +24,10 @@ class User(Base):
         Enum(UserRole, name="user_role", values_callable=lambda x: [e.value for e in x]),
         nullable=False,
     )
-    department: Mapped[str | None] = mapped_column(String(255))
+    department_id: Mapped[int | None] = mapped_column(
+        ForeignKey("departments.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -35,6 +39,7 @@ class User(Base):
         nullable=False,
     )
 
+    department: Mapped["Department | None"] = relationship(back_populates="users")
     created_tickets: Mapped[list["Ticket"]] = relationship(
         back_populates="creator",
         foreign_keys="Ticket.created_by_id",
@@ -42,6 +47,10 @@ class User(Base):
     assigned_tickets: Mapped[list["Ticket"]] = relationship(
         back_populates="assignee",
         foreign_keys="Ticket.assigned_to_id",
+    )
+    managed_tickets: Mapped[list["Ticket"]] = relationship(
+        back_populates="reviewing_manager",
+        foreign_keys="Ticket.manager_id",
     )
     comments: Mapped[list["TicketComment"]] = relationship(back_populates="author")
     audit_logs: Mapped[list["AuditLog"]] = relationship(back_populates="user")

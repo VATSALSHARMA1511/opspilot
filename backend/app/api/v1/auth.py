@@ -47,7 +47,7 @@ def register(
         hashed_password=hash_password(user_in.password),
         full_name=user_in.full_name,
         role=user_in.role,
-        department=user_in.department,
+        department_id=user_in.department_id,
         is_active=user_in.is_active,
     )
     db.add(db_user)
@@ -73,6 +73,7 @@ def register(
             "full_name": db_user.full_name,
             "email": db_user.email,
             "role": db_user.role,
+            "department_id": db_user.department_id,
         },
     }
 
@@ -110,10 +111,11 @@ def login(
         "refresh_token": refresh_token,
         "token_type": "bearer",
         "user": {
-            "id": user.id,
-            "full_name": user.full_name,
-            "email": user.email,
-            "role": user.role,
+            "id": db_user.id,
+            "full_name": db_user.full_name,
+            "email": db_user.email,
+            "role": db_user.role,
+            "department_id": db_user.department_id,
         },
     }
 
