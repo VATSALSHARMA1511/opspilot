@@ -9,7 +9,9 @@ import {
 } from 'recharts'
 
 const STATUS_COLORS = {
-  open: '#facc15',
+  pending_review: '#facc15',
+  accepted: '#60a5fa',
+  rejected: '#ef4444',
   assigned: '#60a5fa',
   in_progress: '#a78bfa',
   resolved: '#4ade80',
@@ -50,7 +52,7 @@ export default function DashboardPage() {
   // Stat counts
   const counts = {
     total: tickets.length,
-    open: tickets.filter(t => t.status === 'open').length,
+    open: tickets.filter(t => t.status === 'pending_review' || t.status === 'accepted').length,
     in_progress: tickets.filter(t => t.status === 'in_progress').length,
     resolved: tickets.filter(t => t.status === 'resolved').length,
   }
