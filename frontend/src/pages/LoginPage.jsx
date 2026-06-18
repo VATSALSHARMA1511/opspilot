@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import client from '../api/client'
-
+import axios from 'axios'
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -15,7 +15,7 @@ export default function LoginPage() {
   })
 
   useEffect(() => {
-    client.get('/api/v1/departments').then(res => setDepartments(res.data || [])).catch(() => {})
+    axios.get('https://opspilot-pfrc.onrender.com/api/v1/departments').then(res => setDepartments(res.data || [])).catch(() => {})
   }, [])
 
   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value })
