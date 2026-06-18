@@ -1,5 +1,6 @@
   import Layout from '../components/Layout'
   import { useState, useEffect, useCallback } from "react";
+  import { useAuth } from "../context/AuthContext";
   import { useNavigate } from "react-router-dom";
   import {
     Plus,
@@ -293,9 +294,57 @@
   }
 
   // ─── Main Page ────────────────────────────────────────────────────────────────
-
+  function TicketTable({ tickets, navigate, loading, error, onShowModal, filters }) {
+  return (
+    <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
+      <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 px-5 py-3 border-b border-zinc-800 bg-zinc-950">
+        <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Title</span>
+        <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Status</span>
+        <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Priority</span>
+        <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Created by</span>
+        <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Date</span>
+      </div>
+      {loading && (
+        <div className="flex items-center justify-center gap-2 py-16 text-zinc-500 text-sm">
+          <Loader2 size={16} className="animate-spin" />Loading tickets...
+        </div>
+      )}
+      {!loading && error && (
+        <div className="flex items-center justify-center gap-2 py-16 text-red-400 text-sm">
+          <AlertCircle size={16} />{error}
+        </div>
+      )}
+      {!loading && !error && tickets.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-10 text-zinc-500">
+          <p className="text-sm">No tickets here.</p>
+        </div>
+      )}
+      {!loading && !error && tickets.map((ticket) => (
+        <div
+          key={ticket.id}
+          onClick={() => navigate(`/tickets/${ticket.id}`)}
+          className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 px-5 py-4 border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50 cursor-pointer transition-colors group"
+        >
+          <div className="min-w-0">
+            <p className="text-sm text-white font-medium truncate group-hover:text-white/90">{ticket.title}</p>
+            <p className="text-xs text-zinc-600 mt-0.5">#{ticket.id}</p>
+          </div>
+          <div className="flex items-center"><StatusBadge status={ticket.status} /></div>
+          <div className="flex items-center"><PriorityLabel priority={ticket.priority} /></div>
+          <div className="flex items-center">
+            <span className="text-sm text-zinc-400 truncate">{ticket.created_by?.email ?? '—'}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-sm text-zinc-500">{formatDate(ticket.created_at)}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
   export default function TicketsPage() {
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [tickets, setTickets] = useState([]);
     const [total, setTotal] = useState(0);
@@ -352,6 +401,10 @@
       setShowModal(false);
       fetchTickets();
     }
+
+    // ── Derived sections ──
+    const myTickets = tickets.filter(t => t.created_by?.id === user?.id)
+    const assignedToMe = tickets.filter(t => t.assigned_to?.id === user?.id && t.created_by?.id !== user?.id)
 
     // ── Render ──
 
@@ -439,88 +492,18 @@
             )}
           </div>
 
-          {/* Table */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
-            {/* Table header */}
-            <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 px-5 py-3 border-b border-zinc-800 bg-zinc-950">
-              <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Title</span>
-              <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Status</span>
-              <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Priority</span>
-              <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Created by</span>
-              <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Date</span>
+          {/* Tables */}
+          {assignedToMe.length > 0 && (
+            <div>
+              <h2 className="text-sm font-medium text-zinc-400 mb-3">Assigned to Me</h2>
+              <TicketTable tickets={assignedToMe} navigate={navigate} loading={loading} error={error} />
             </div>
-
-            {/* Loading */}
-            {loading && (
-              <div className="flex items-center justify-center gap-2 py-16 text-zinc-500 text-sm">
-                <Loader2 size={16} className="animate-spin" />
-                Loading tickets...
-              </div>
-            )}
-
-            {/* Error */}
-            {!loading && error && (
-              <div className="flex items-center justify-center gap-2 py-16 text-red-400 text-sm">
-                <AlertCircle size={16} />
-                {error}
-              </div>
-            )}
-
-            {/* Empty */}
-            {!loading && !error && tickets.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16 text-zinc-500">
-                <p className="text-sm">No tickets found.</p>
-                {(filters.status || filters.priority || filters.search) ? (
-                  <p className="text-xs mt-1">Try clearing the filters.</p>
-                ) : (
-                  <button
-                    onClick={() => setShowModal(true)}
-                    className="mt-3 text-xs text-white underline underline-offset-2"
-                  >
-                    Create the first ticket
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Rows */}
-            {!loading && !error && tickets.map((ticket) => (
-              <div
-                key={ticket.id}
-                onClick={() => navigate(`/tickets/${ticket.id}`)}
-                className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 px-5 py-4 border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50 cursor-pointer transition-colors group"
-              >
-                {/* Title + ID */}
-                <div className="min-w-0">
-                  <p className="text-sm text-white font-medium truncate group-hover:text-white/90">
-                    {ticket.title}
-                  </p>
-                  <p className="text-xs text-zinc-600 mt-0.5">#{String(ticket.id).slice(0, 8)}</p>
-                </div>
-
-                {/* Status */}
-                <div className="flex items-center">
-                  <StatusBadge status={ticket.status} />
-                </div>
-
-                {/* Priority */}
-                <div className="flex items-center">
-                  <PriorityLabel priority={ticket.priority} />
-                </div>
-
-                {/* Created by */}
-                <div className="flex items-center">
-                  <span className="text-sm text-zinc-400 truncate">
-                    {ticket.created_by?.email ?? ticket.created_by?.id ?? "—"}
-                  </span>
-                </div>
-
-                {/* Date */}
-                <div className="flex items-center">
-                  <span className="text-sm text-zinc-500">{formatDate(ticket.created_at)}</span>
-                </div>
-              </div>
-            ))}
+          )}
+          <div>
+            <h2 className="text-sm font-medium text-zinc-400 mb-3">
+              {assignedToMe.length > 0 ? 'My Raised Tickets' : 'My Tickets'}
+            </h2>
+            <TicketTable tickets={myTickets} navigate={navigate} loading={loading} error={error} />
           </div>
 
           {/* Pagination */}
