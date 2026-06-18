@@ -52,13 +52,13 @@ def _get_ticket_or_404(db: Session, ticket_id: int) -> Ticket:
 def _can_view_ticket(ticket: Ticket, current_user: User) -> bool:
     if current_user.role == UserRole.ADMIN:
         return True
+    if ticket.created_by_id == current_user.id:
+        return True
     if current_user.role == UserRole.MANAGER:
         return ticket.target_department_id == current_user.department_id
     if current_user.role == UserRole.MEMBER:
         return ticket.assigned_to_id == current_user.id
-    # any logged-in user can see tickets they created
-    return ticket.created_by_id == current_user.id
-
+    return False
 
 # ---------------------------------------------------------------------------
 # Ticket CRUD

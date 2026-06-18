@@ -1,6 +1,10 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+
+class TicketStatusBody(BaseModel):
+    status: str
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_db, get_current_user
@@ -90,14 +94,11 @@ def assign_ticket(
 @router.patch("/{ticket_id}/status", response_model=TicketResponse)
 def change_status(
     ticket_id: int,
-    body: dict,
+    body: TicketStatusBody,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    new_status = body.get("status")
-    if not new_status:
-        raise HTTPException(status_code=422, detail="status field required")
-    return ticket_service.change_status(db, ticket_id, new_status, current_user)
+    return ticket_service.change_status(db, ticket_id, body.status, current_user)
 
 
 @router.delete("/{ticket_id}", status_code=204)
